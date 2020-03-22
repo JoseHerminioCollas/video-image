@@ -30,48 +30,58 @@
         <div></div>
     <script type="text/javascript">
 
-document.getElementsByTagName('input')[0].addEventListener('change', function(event) {
-  var file = event.target.files[0];
-  var fileReader = new FileReader();
+const snapImage = (video) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrlImage = canvas.toDataURL();
+  const success = dataUrlImage.length > 100000;
+  if (success) {
+    return dataUrlImage
+  }
+  return success;
+};
+const makeImg = (dataUrlImage) => {
+  const img = document.createElement('img');
+  img.src = dataUrlImage;
+  document.getElementsByTagName('div')[0].appendChild(img);
+} 
+document.getElementsByTagName('input')[0].addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  const fileReader = new FileReader();
   if (file.type.match('image')) {
-    fileReader.onload = function() {
-      var img = document.createElement('img');
+    fileReader.onload = () => {
+      const img = document.createElement('img');
       img.src = fileReader.result;
       document.getElementsByTagName('div')[0].appendChild(img);
     };
     fileReader.readAsDataURL(file);
   } else {
-    fileReader.onload = function() {
-      var blob = new Blob([fileReader.result], {type: file.type});
-      var url = URL.createObjectURL(blob);
-      var video = document.createElement('video');
-      var timeupdate = function() {
-        if (snapImage()) {
+    fileReader.onload = () => {
+      const blob = new Blob([fileReader.result], {type: file.type});
+      const url = URL.createObjectURL(blob);
+      const video = document.createElement('video');
+
+      const timeupdate = () => {
+        const dataUrlImage = snapImage(video)
+        if (dataUrlImage) {
+          makeImg(dataUrlImage)
           video.removeEventListener('timeupdate', timeupdate);
           video.pause();
-        }
-      };
-      video.addEventListener('loadeddata', function() {
-        if (snapImage()) {
-          video.removeEventListener('timeupdate', timeupdate);
-        }
-      });
-      var snapImage = function() {
-        var canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        var image = canvas.toDataURL();
-        var success = image.length > 100000;
-        if (success) {
-          var img = document.createElement('img');
-          img.src = image;
-          document.getElementsByTagName('div')[0].appendChild(img);
           URL.revokeObjectURL(url);
         }
-        return success;
       };
+      video.addEventListener('loadeddata', () => {
+        const dataUrlImage = snapImage(video)
+        if (dataUrlImage) {
+          makeImg(dataUrlImage)
+          video.removeEventListener('timeupdate', timeupdate);
+          URL.revokeObjectURL(url);
+        }
+      });
       video.addEventListener('timeupdate', timeupdate);
+
       video.preload = 'metadata';
       video.src = url;
       // Load video in Safari / IE11
