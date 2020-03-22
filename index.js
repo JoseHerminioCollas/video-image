@@ -47,8 +47,9 @@ const handleFileInput = (files) => {
     }
     fileReader.readAsDataURL(file)
   } else {
-    fileReader.onload = () => {
-      smallVideoImage(fileReader.result)
+    fileReader.onload = async () => {
+      const sVI = await smallVideoImage(fileReader.result)
+      document.getElementsByTagName('div')[0].appendChild(sVI)
     }
     fileReader.readAsArrayBuffer(file)
   }
@@ -65,34 +66,38 @@ const smallImage = (imageDataUrl) => {
   })
 }
 const smallVideoImage = (videoDataUrl) => {
-  const blob = new Blob([videoDataUrl], { type: 'video' })
-  const url = URL.createObjectURL(blob)
-  const video = document.createElement('video')
-  const timeupdate = () => {
-    const dataUrlImage = snapImage(video)
-    if (dataUrlImage) {
-      const ic = imageConfig( video.videoWidth, video.videoHeight )
-      makeImg(dataUrlImage, ic.width(), ic.height())
-      video.pause()
-      URL.revokeObjectURL(url)
+  return new Promise((resolve, reject) => {
+    const blob = new Blob([videoDataUrl], { type: 'video' })
+    const url = URL.createObjectURL(blob)
+    const video = document.createElement('video')
+    const timeupdate = () => {
+      const dataUrlImage = snapImage(video)
+      if (dataUrlImage) {
+        const ic = imageConfig( video.videoWidth, video.videoHeight )
+        const sVI = makeImg(dataUrlImage, ic.width(), ic.height())
+        resolve(sVI)
+        video.pause()
+        URL.revokeObjectURL(url)
+      }
     }
-  }
-  video.addEventListener('loadeddata', () => {
-    const dataUrlImage = snapImage(video)
-    if (dataUrlImage) {        
-      const ic = imageConfig( video.videoWidth, video.videoHeight )
-      makeImg(dataUrlImage, ic.width(), ic.height())
-      video.removeEventListener('timeupdate', timeupdate)
-      URL.revokeObjectURL(url)
-    }
+    video.addEventListener('loadeddata', () => {
+      const dataUrlImage = snapImage(video)
+      if (dataUrlImage) {
+        const ic = imageConfig( video.videoWidth, video.videoHeight )
+        const sVI = makeImg(dataUrlImage, ic.width(), ic.height())
+        resolve(sVI)
+        video.removeEventListener('timeupdate', timeupdate)
+        URL.revokeObjectURL(url)
+      }
+    })
+    video.addEventListener('timeupdate', timeupdate)
+    video.preload = 'metadata'
+    video.src = url
+    // Load video in Safari / IE11
+    video.muted = true
+    video.playsInline = true
+    video.play()  
   })
-  video.addEventListener('timeupdate', timeupdate)
-  video.preload = 'metadata'
-  video.src = url
-  // Load video in Safari / IE11
-  video.muted = true
-  video.playsInline = true
-  video.play()
 }; 
 
 document.getElementsByTagName('input')[0]
