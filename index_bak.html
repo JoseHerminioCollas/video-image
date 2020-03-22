@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body {
+            display: flex;
+        }
+
+        video {
+            width: 300px;
+            height: 300px;
+        }
+
+        #thumb {
+            width: 100px;
+            height: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="file" name="file" id="fileItem" />
+    <img id="thumb" />
+    <video id="video-demo" />
+    <script type="text/javascript">
+        const video = document.querySelector('#video-demo');
+        function onChange(files) {
+            const fileItem = document.getElementById('fileItem');
+            const file = fileItem.files[0];
+            const reader = new FileReader()
+            reader.addEventListener("load", function () {
+                const validDataUrl = reader.result
+                video.addEventListener("loadeddata", () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.height = 300;
+                    canvas.width = 200;
+                    ctx.drawImage(video, 0, 0);
+                    const pngI = document.querySelector('#thumb')
+                    pngI.src = canvas.toDataURL()
+                });
+                video.src = validDataUrl;
+                document.body.appendChild(video)
+            }, false);
+            reader.readAsDataURL(file)
+        }
+        document.querySelector('#fileItem').addEventListener('change',
+            e => onChange(e.target.files))
+    </script>
+</body>
+
+</html>

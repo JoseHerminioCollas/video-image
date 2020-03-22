@@ -22,34 +22,11 @@
 </head>
 
 <body>
-    <input type="file" name="file" id="fileItem" />
-    <img id="thumb" />
-    <video id="video-demo" />
-    <script type="text/javascript">
-        const video = document.querySelector('#video-demo');
-        function onChange(files) {
-            const fileItem = document.getElementById('fileItem');
-            const file = fileItem.files[0];
-            const reader = new FileReader()
-            reader.addEventListener("load", function () {
-                const validDataUrl = reader.result
-                video.addEventListener("loadeddata", () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.height = 300;
-                    canvas.width = 200;
-                    ctx.drawImage(video, 0, 0);
-                    const pngI = document.querySelector('#thumb')
-                    pngI.src = canvas.toDataURL()
-                });
-                video.src = validDataUrl;
-                document.body.appendChild(video)
-            }, false);
-            reader.readAsDataURL(file)
-        }
-        document.querySelector('#fileItem').addEventListener('change',
-            e => onChange(e.target.files))
-    </script>
+    <input type="file" accept=".jpg,.jpeg.,.gif,.png,.mov,.mp4" />
+    <p><strong>Select a video or image file</strong><br /><br />Supported browsers (tested): Chrome, Firefox, Safari,
+        Opera, IE10, IE11, Android (Chrome), iOS Safari (10+)</p>
+    <div></div>
+    <script src="index.js"> </script>
 </body>
 
 </html>
