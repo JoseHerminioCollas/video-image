@@ -28,14 +28,18 @@ const imageConfig = (w, h) => {
         return w * (maxHeight / h)
       }
     },
-    height: () => maxHeight
+    height: () => {
+      if (w > h) { // is horizontal
+        return h * (maxWidth / w)
+      } else {
+        return maxHeight
+      }
+    }
   }
 }
 document.getElementsByTagName('input')[0].addEventListener('change', (event) => {
   const file = event.target.files[0]
   const fileReader = new FileReader()
-  let width = 200;
-  let height = 100; // gets calculated when video is created
   if (file.type.match('image')) {
     fileReader.onload = () => {
       const img = new Image()
@@ -51,22 +55,20 @@ document.getElementsByTagName('input')[0].addEventListener('change', (event) => 
       const blob = new Blob([fileReader.result], { type: file.type })
       const url = URL.createObjectURL(blob)
       const video = document.createElement('video')
-
       const timeupdate = () => {
         const dataUrlImage = snapImage(video)
-        height = video.videoHeight * (width / video.videoWidth);
         if (dataUrlImage) {
-          makeImg(dataUrlImage, width, height)
-          video.removeEventListener('timeupdate', timeupdate)
+          const ic = imageConfig( video.videoWidth, video.videoHeight )
+          makeImg(dataUrlImage, ic.width(), ic.height())
           video.pause()
           URL.revokeObjectURL(url)
         }
       }
       video.addEventListener('loadeddata', () => {
         const dataUrlImage = snapImage(video)
-        height = video.videoHeight * (width / video.videoWidth);
-        if (dataUrlImage) {
-          makeImg(dataUrlImage, width, height)
+        if (dataUrlImage) {        
+          const ic = imageConfig( video.videoWidth, video.videoHeight )
+          makeImg(dataUrlImage, ic.width(), ic.height())
           video.removeEventListener('timeupdate', timeupdate)
           URL.revokeObjectURL(url)
         }
