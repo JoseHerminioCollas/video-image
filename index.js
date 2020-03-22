@@ -17,7 +17,20 @@ const makeImg = (dataUrlImage, width, height) => {
   img.height = height;
   document.getElementsByTagName('div')[0].appendChild(img)
 }
-
+const imageConfig = (w, h) => {
+  const maxWidth = 200
+  const maxHeight = 150
+  return {
+    width: () => {
+      if (w > h) { // is Horizontal
+        return maxWidth
+      } else {
+        return w * (maxHeight / h)
+      }
+    },
+    height: () => maxHeight
+  }
+}
 document.getElementsByTagName('input')[0].addEventListener('change', (event) => {
   const file = event.target.files[0]
   const fileReader = new FileReader()
@@ -27,12 +40,8 @@ document.getElementsByTagName('input')[0].addEventListener('change', (event) => 
     fileReader.onload = () => {
       const img = new Image()
       img.onload = function () {
-        console.log('xxx', img.width)
-        // if the image is vertical
-        const maxWidth = 250
-        const maxHeight = 150
-        const width = img.width * (maxHeight / img.height )
-        makeImg(fileReader.result, width, maxHeight)
+        const ic = imageConfig( img.width, img.height )
+        makeImg(fileReader.result, ic.width(), ic.height())
       }
       img.src = fileReader.result
     }
