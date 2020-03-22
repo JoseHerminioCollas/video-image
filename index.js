@@ -21,11 +21,20 @@ const makeImg = (dataUrlImage, width, height) => {
 document.getElementsByTagName('input')[0].addEventListener('change', (event) => {
   const file = event.target.files[0]
   const fileReader = new FileReader()
+  let width = 200;
+  let height = 100; // gets calculated when video is created
   if (file.type.match('image')) {
     fileReader.onload = () => {
-      const img = document.createElement('img')
+      const img = new Image()
+      img.onload = function () {
+        console.log('xxx', img.width)
+        // if the image is vertical
+        const maxWidth = 250
+        const maxHeight = 150
+        const width = img.width * (maxHeight / img.height )
+        makeImg(fileReader.result, width, maxHeight)
+      }
       img.src = fileReader.result
-      document.getElementsByTagName('div')[0].appendChild(img)
     }
     fileReader.readAsDataURL(file)
   } else {
@@ -33,8 +42,7 @@ document.getElementsByTagName('input')[0].addEventListener('change', (event) => 
       const blob = new Blob([fileReader.result], { type: file.type })
       const url = URL.createObjectURL(blob)
       const video = document.createElement('video')
-      const width = 200;
-      let height = 100; // gets calculated when video is created
+
       const timeupdate = () => {
         const dataUrlImage = snapImage(video)
         height = video.videoHeight * (width / video.videoWidth);
