@@ -10,9 +10,11 @@ const snapImage = (video) => {
   }
 }
 
-const makeImg = (dataUrlImage) => {
+const makeImg = (dataUrlImage, width, height) => {
   const img = document.createElement('img')
   img.src = dataUrlImage
+  img.width = width;
+  img.height = height;
   document.getElementsByTagName('div')[0].appendChild(img)
 }
 
@@ -31,10 +33,13 @@ document.getElementsByTagName('input')[0].addEventListener('change', (event) => 
       const blob = new Blob([fileReader.result], { type: file.type })
       const url = URL.createObjectURL(blob)
       const video = document.createElement('video')
+      const width = 200;
+      let height = 100; // gets calculated when video is created
       const timeupdate = () => {
         const dataUrlImage = snapImage(video)
+        height = video.videoHeight * (width / video.videoWidth);
         if (dataUrlImage) {
-          makeImg(dataUrlImage)
+          makeImg(dataUrlImage, width, height)
           video.removeEventListener('timeupdate', timeupdate)
           video.pause()
           URL.revokeObjectURL(url)
@@ -42,8 +47,9 @@ document.getElementsByTagName('input')[0].addEventListener('change', (event) => 
       }
       video.addEventListener('loadeddata', () => {
         const dataUrlImage = snapImage(video)
+        height = video.videoHeight * (width / video.videoWidth);
         if (dataUrlImage) {
-          makeImg(dataUrlImage)
+          makeImg(dataUrlImage, width, height)
           video.removeEventListener('timeupdate', timeupdate)
           URL.revokeObjectURL(url)
         }
