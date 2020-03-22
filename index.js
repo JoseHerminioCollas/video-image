@@ -13,9 +13,9 @@ const snapImage = (video) => {
 const makeImg = (dataUrlImage, width, height) => {
   const img = document.createElement('img')
   img.src = dataUrlImage
-  img.width = width;
-  img.height = height;
-  document.getElementsByTagName('div')[0].appendChild(img) // TODO move this out of this function
+  img.width = width
+  img.height = height
+  return img
 }
 const imageConfig = (w, h) => {
   const maxWidth = 200
@@ -37,18 +37,17 @@ const imageConfig = (w, h) => {
     }
   }
 }
-const handleFileInput = async (files) => {
+const handleFileInput = (files) => {
   const file = files[0]
   const fileReader = new FileReader()
   if (file.type.match('image')) {
-    fileReader.onload = () => {
-      smallImage(fileReader.result)
-      console.log(fileReader.result)
+    fileReader.onload = async () => {
+      const sI = await smallImage(fileReader.result)
+      document.getElementsByTagName('div')[0].appendChild(sI)
     }
     fileReader.readAsDataURL(file)
   } else {
     fileReader.onload = () => {
-      console.log(fileReader.result)
       smallVideoImage(fileReader.result)
     }
     fileReader.readAsArrayBuffer(file)
@@ -56,11 +55,14 @@ const handleFileInput = async (files) => {
 }
 const smallImage = (imageDataUrl) => {
   const img = new Image()
-  img.onload = function () {
-    const ic = imageConfig(img.width, img.height)
-    makeImg(imageDataUrl, ic.width(), ic.height())
-  }
-  img.src = imageDataUrl
+  return new Promise((resolove, reject) => {
+    img.onload = function () {
+      const ic = imageConfig(img.width, img.height)
+      const smallImage = makeImg(imageDataUrl, ic.width(), ic.height())
+      resolove(smallImage)
+    }
+    img.src = imageDataUrl
+  })
 }
 const smallVideoImage = (videoDataUrl) => {
   const blob = new Blob([videoDataUrl], { type: 'video' })
